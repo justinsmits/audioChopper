@@ -46,28 +46,21 @@ namespace SplitAudio
     .WithParsed(RunOptions)
     .WithNotParsed(HandleParseError);
 
-
-            foreach(var jobbie in Jobs)
-            {
-                Console.WriteLine(jobbie.OutFileName);
-                Console.WriteLine(jobbie.StartTime.ToString());
-            }
-
-
-            return;
-            TimeSpan startTimeSpan = TimeSpan.FromSeconds(4920);
-            TimeSpan endTimeSpan = TimeSpan.FromSeconds(5160);
-
+            Console.WriteLine("Beginning to load: {0}", InputFilePath);
             using (IWaveSource source = CodecFactory.Instance.GetCodec(InputFilePath))
             {
-                using (MediaFoundationEncoder mediaFoundationEncoder =
-                                MediaFoundationEncoder.CreateWMAEncoder(source.WaveFormat, @"C:\Source2\282cut.mp3"))
+                Console.WriteLine("Loaded: {0}", InputFilePath);
+                foreach (var jobbie in Jobs)
                 {
-                    AddTimeSpan(source, mediaFoundationEncoder, startTimeSpan, endTimeSpan);
+                    Console.WriteLine("Working on job with startTime: {0} timeSpan: {1}", jobbie.StartTime.ToString(), jobbie.Span.ToString());
+                    using (MediaFoundationEncoder mediaFoundationEncoder =
+                                    MediaFoundationEncoder.CreateWMAEncoder(source.WaveFormat, jobbie.OutFileName))
+                    {
+                        AddTimeSpan(source, mediaFoundationEncoder, jobbie.StartTime, jobbie.Span);
+                    }
+
                 }
-
             }
-
         }
 
         private static TimeSpan GetTimespan(String input)
@@ -96,7 +89,7 @@ namespace SplitAudio
 
             String[] split = input.Split('|');
             startTime = GetTimespan(split[0]);
-            span = GetTimespan(split[1]);
+            span = (startTime + GetTimespan(split[1]));
 
             return new Tuple<TimeSpan, TimeSpan>(startTime, span);
         }
@@ -110,7 +103,7 @@ namespace SplitAudio
             String inputDirectory = System.IO.Path.GetDirectoryName(opts.InputFile);
             String inputFileName = System.IO.Path.GetFileNameWithoutExtension(opts.InputFile);
             String inputFileExtension = System.IO.Path.GetExtension(opts.InputFile);
-            foreach(var timez in opts.InputTimes)
+            foreach (var timez in opts.InputTimes)
             {
                 ChopJob cj = new ChopJob();
                 Tuple<TimeSpan, TimeSpan> jobTimes = GetJobTimes(timez);
@@ -120,6 +113,7 @@ namespace SplitAudio
                 cj.OutFileName = finalFilePath;
                 Jobs.Add(cj);
                 i++;
+                Console.WriteLine("New job added with startTime of: {0} and target output path of {1}", cj.StartTime, cj.OutFileName);
             }
 
         }
