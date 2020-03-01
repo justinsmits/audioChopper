@@ -25,13 +25,6 @@ namespace SplitAudio
               HelpText = "Prints all messages to standard output.")]
             public bool Verbose { get; set; }
 
-            [Option("stdin",
-              Default = false,
-              HelpText = "Read from stdin")]
-            public bool stdin { get; set; }
-
-            [Value(0, MetaName = "offset", HelpText = "File offset.")]
-            public long? Offset { get; set; }
         }
 
         class ChopJob
@@ -42,7 +35,7 @@ namespace SplitAudio
         }
 
         //ewwww, but perfect is the enemy of good
-        private static IEnumerable<ChopJob> Jobs = new System.Collections.Generic.List<ChopJob>();
+        private static readonly List<ChopJob> Jobs = new System.Collections.Generic.List<ChopJob>();
         private static String InputFilePath;
 
         static void Main(string[] args)
@@ -53,6 +46,12 @@ namespace SplitAudio
     .WithParsed(RunOptions)
     .WithNotParsed(HandleParseError);
 
+
+            foreach(var jobbie in Jobs)
+            {
+                Console.WriteLine(jobbie.OutFileName);
+                Console.WriteLine(jobbie.StartTime.ToString());
+            }
 
 
             return;
@@ -117,8 +116,10 @@ namespace SplitAudio
                 Tuple<TimeSpan, TimeSpan> jobTimes = GetJobTimes(timez);
                 cj.StartTime = jobTimes.Item1;
                 cj.Span = jobTimes.Item2;
-                String finalFilePath = System.IO.Path.Combine(inputDirectory, (inputFileName + i.ToString()), inputFileExtension);
+                String finalFilePath = System.IO.Path.Combine(inputDirectory, inputFileName + i.ToString() + inputFileExtension);
                 cj.OutFileName = finalFilePath;
+                Jobs.Add(cj);
+                i++;
             }
 
         }

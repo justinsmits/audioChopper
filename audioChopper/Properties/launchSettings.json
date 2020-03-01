@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "audioChopper": {
+      "commandName": "Project",
+      "commandLineArgs": "-r \"C:\\Source2\\282.mp3\" -t \"01:22:00|03:45,01:29:00|04:52\""
+    }
+  }
+}
